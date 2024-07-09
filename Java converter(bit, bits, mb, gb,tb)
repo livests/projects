@@ -1,0 +1,127 @@
+import java.io.*;
+import java.text.DecimalFormat;
+import javax.swing.JOptionPane;
+
+public class Bogdans_uzd1 {
+    static String fNosaukums = "";
+    static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("##.0000");
+
+    public static void main(String[] args) {
+        String izvele;
+
+        String[] option = {"Convert", "View", "End"};
+
+        do {
+            izvele = (String) JOptionPane.showInputDialog(null, "Whitch operation do you make?", "Hello",
+                    JOptionPane.QUESTION_MESSAGE, null, option, option[0]);
+            if (izvele == null) izvele = "End";
+            izvele = izvele.toLowerCase();
+
+            switch (izvele) {
+                case "convert":
+                    konvertet();
+                    break;
+                case "view":
+                    apskatit();
+                    break;
+                case "end":
+                    JOptionPane.showMessageDialog(null, "Program stoping", "End",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    break;
+                default:
+                    JOptionPane.showMessageDialog(null, "Wrong option", "Error", JOptionPane.ERROR_MESSAGE);
+                    break;
+            }
+        } while (!izvele.equals("end"));
+    }
+
+    static void konvertet() {
+    	  DecimalFormat df = new DecimalFormat("##.0000");
+        double sk = getValidatedInput();
+        if (sk == -1) return;
+
+        String[] opcijas = {"bit", "bait", "kb", "gb", "tb"};
+
+        do {
+            String menu = (String) JOptionPane.showInputDialog(null, "To witch unit you will convert?", "Convert",
+                    JOptionPane.QUESTION_MESSAGE, null, opcijas, opcijas[0]);
+
+            if (menu == null || menu.equals("back")) break;
+
+            switch (menu.toLowerCase()) {
+                case "bit":
+                    sk *= 8388608;
+                    JOptionPane.showMessageDialog(null, "Converting is " + df.format(sk) + " bit");
+                    break;
+                case "bait":
+                    sk *= 1048576;
+                    JOptionPane.showMessageDialog(null, "Converting is " + df.format(sk) + " bait");
+                    break;
+                case "kb":
+                    sk *= 1000;
+                    JOptionPane.showMessageDialog(null, "Converting is " + df.format(sk) + " kilobait");
+                    break;
+                case "gb":
+                    sk *= 0.0001; 
+                    JOptionPane.showMessageDialog(null, "Converting is " + df.format(sk) + " gigabait");
+                    break;
+                case "tb":
+                    sk *= 0.0000001;
+                    JOptionPane.showMessageDialog(null, "Converting is " + df.format(sk) + " terabait");
+                    break;
+            }
+
+            if (saglabat(sk, menu.toLowerCase())) return;
+        } while (true);
+    }
+
+    static double getValidatedInput() {
+        double sk;
+        do {
+            try {
+                sk = Double.parseDouble(JOptionPane.showInputDialog(null,
+                        "Enter SSD size in megabites, minimum 1GB", "Convert",
+                        JOptionPane.INFORMATION_MESSAGE));
+                if (sk < 1000) {
+                    JOptionPane.showMessageDialog(null, "Inputed size is smaller than 1GB", "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    continue;
+                }
+                return sk;
+            } catch (NumberFormatException nfe) {
+                JOptionPane.showMessageDialog(null, "Wrong simbol inputed", "Error", JOptionPane.ERROR_MESSAGE);
+                return -1;
+            }
+        } while (true);
+    }
+
+    static boolean saglabat(double sk, String unit) {
+        fNosaukums = JOptionPane.showInputDialog(null, "Type file name", "Save",
+                JOptionPane.INFORMATION_MESSAGE);
+
+        if (fNosaukums == null) return false;
+
+        try (PrintWriter pw = new PrintWriter(new FileWriter(fNosaukums + ".txt", true))) {
+            pw.println(DECIMAL_FORMAT.format(sk)+ " "+unit);
+            JOptionPane.showMessageDialog(null, "saved to file!", "Result saved",
+                    JOptionPane.INFORMATION_MESSAGE);
+            return true;
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, "Error saving in file!", "Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+    }
+
+    static void apskatit() {
+        try (BufferedReader br = new BufferedReader(new FileReader(fNosaukums + ".txt"))) {
+            StringBuilder str = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                str.append(line).append("\n");
+            }
+            JOptionPane.showMessageDialog(null, str.toString(), "File content", JOptionPane.INFORMATION_MESSAGE);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, "Error reading file", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+}
